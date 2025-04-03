@@ -10,7 +10,7 @@ import com.ticketbooking.bookingservice.request.BookingRequest;
 import com.ticketbooking.bookingservice.response.BookingResponse;
 
 @RestController
-@RequestMapping("/api/v1/booking")
+@RequestMapping("/api/v1")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -20,7 +20,7 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    @PostMapping(consumes = "application/json", produces = "application/json", path = "")
+    @PostMapping(consumes = "application/json", produces = "application/json", path = "/booking")
     public BookingResponse createBooking(@RequestBody BookingRequest request){
         return bookingService.createBooking(request);
     }

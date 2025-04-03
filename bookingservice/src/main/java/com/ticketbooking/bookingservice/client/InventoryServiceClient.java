@@ -13,6 +13,6 @@ public class InventoryServiceClient {
 
     public InventoryResponse getInventory(final Long eventId){
         final RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(inventoryServiceUrl + "/event" + eventId, InventoryResponse.class);
+        return restTemplate.getForObject(inventoryServiceUrl + "/event/" + eventId, InventoryResponse.class);
     }
 }
