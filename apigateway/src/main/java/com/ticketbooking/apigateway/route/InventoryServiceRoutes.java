@@ -1,14 +1,18 @@
 package com.ticketbooking.apigateway.route;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions;
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.function.RequestPredicates;
 import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
+
+import java.net.URI;
 
 @Configuration
 public class InventoryServiceRoutes {
@@ -29,6 +33,9 @@ public class InventoryServiceRoutes {
                 .route(RequestPredicates.path("/api/v1/inventory/event/{eventId}"),
                         request -> forwardWithPathVariable(request,"eventId",
                                 inventoryServiceUrl+"/event/"))
+
+                .filter(CircuitBreakerFilterFunctions.circuitBreaker("inventoryServiceCircuitBreaker",
+                        URI.create("forward:/inventoryFallbackRoute")))
                 .build();
     }
 
@@ -37,5 +44,14 @@ public class InventoryServiceRoutes {
                                                    String baseUrl) throws Exception {
         String value = request.pathVariable(pathVariable);
         return HandlerFunctions.http(baseUrl+value).handle(request);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> inventoryFallbackRoute() {
+        return GatewayRouterFunctions.route("inventoryFallbackRoute")
+                .POST("/inventoryFallbackRoute",
+                        request -> ServerResponse.status(HttpStatus.SERVICE_UNAVAILABLE)
+                                .body("Inventory service is down"))
+                .build();
     }
 }
